@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "title": "Distributed Systems",
+    "topic": "distributed systems",
+    "price": 50.0,
+    "stock": 10
+  },
+  {
+    "id": 2,
+    "title": "Operating Systems Concepts",
+    "topic": "operating systems",
+    "price": 45.0,
+    "stock": 8
+  },
+  {
+    "id": 3,
+    "title": "Computer Networks",
+    "topic": "networks",
+    "price": 40.0,
+    "stock": 12
+  },
+  {
+    "id": 4,
+    "title": "Advanced Distributed Systems",
+    "topic": "distributed systems",
+    "price": 60.0,
+    "stock": 5
+  }
+]
