@@ -42,5 +42,18 @@ def search_books():
     })
 
 
+@app.route("/info/<int:item_number>", methods=["GET"])
+def get_book_info(item_number):
+    books = load_books()
+
+    for book in books:
+        if book["id"] == item_number:
+            return jsonify(book)
+
+    return jsonify({
+        "error": "Book not found"
+    }), 404
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001)
