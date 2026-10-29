@@ -1,4 +1,5 @@
 import json
+import sqlite3
 from pathlib import Path
 
 from flask import Flask, jsonify, request
@@ -9,8 +10,16 @@ BOOKS_FILE = Path(__file__).resolve().parent / "books.json"
 
 
 def load_books():
-    with open(BOOKS_FILE, "r", encoding="utf-8") as file:
-        return json.load(file)
+    db_file = Path(__file__).resolve().parent / "books.db"
+
+    with sqlite3.connect(db_file) as connection:
+        connection.row_factory = sqlite3.Row
+
+        rows = connection.execute(
+            "SELECT id, title, topic, price, stock FROM books ORDER BY id"
+        ).fetchall()
+
+        return [dict(row) for row in rows]
 
 
 @app.route("/health", methods=["GET"])
