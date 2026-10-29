@@ -98,5 +98,58 @@ def update_book_price(item_number):
     })
 
 
+@app.route("/books/<int:item_number>/decrement", methods=["PATCH"])
+def decrement_book_stock(item_number):
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({"error": "JSON body is required"}), 400
+
+    quantity = data.get("quantity")
+
+    if type(quantity) is not int or quantity <= 0:
+        return jsonify({
+            "error": "Quantity must be a positive integer"
+        }), 400
+
+    db_file = Path(__file__).resolve().parent / "books.db"
+
+    with sqlite3.connect(db_file, timeout=10) as connection:
+        cursor = connection.execute(
+            """
+            UPDATE books
+            SET stock = stock - ?
+            WHERE id = ? AND stock >= ?
+            """,
+            (quantity, item_number, quantity)
+        )
+
+        if cursor.rowcount == 0:
+            book = connection.execute(
+                "SELECT stock FROM books WHERE id = ?",
+                (item_number,)
+            ).fetchone()
+
+            if book is None:
+                return jsonify({"error": "Book not found"}), 404
+
+            return jsonify({
+                "error": "Insufficient stock",
+                "available_stock": book[0]
+            }), 409
+
+        new_stock = connection.execute(
+            "SELECT stock FROM books WHERE id = ?",
+            (item_number,)
+        ).fetchone()[0]
+
+    return jsonify({
+        "message": "Stock decremented successfully",
+        "id": item_number,
+        "quantity": quantity,
+        "stock": new_stock
+    })
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001)
