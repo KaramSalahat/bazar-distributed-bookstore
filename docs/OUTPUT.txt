@@ -113,6 +113,59 @@ Response:
 The duplicate request returned the existing completed order
 without performing another stock decrement.
 
+TEST 6: CONCURRENT PURCHASE REQUESTS
+------------------------------------------------------------
+Purpose:
+Verify that concurrent purchase requests do not cause
+overselling or negative inventory.
+
+Book:
+ID: 2
+Title: RPCs for Noobs.
+Initial stock: 8
+
+Command:
+seq 1 10 | xargs -P 10 -I {} curl -s -o /dev/null -w "Request {}: HTTP %{http_code}\n" -X POST http://localhost:5000/purchase -H "Content-Type: application/json" -d '{"item_number":2,"quantity":1,"request_id":"concurrency-test-20261102-{}"}'
+
+Actual Output:
+Request 8: HTTP 201
+Request 2: HTTP 201
+Request 9: HTTP 201
+Request 1: HTTP 201
+Request 7: HTTP 201
+Request 4: HTTP 201
+Request 6: HTTP 201
+Request 10: HTTP 409
+Request 5: HTTP 201
+Request 3: HTTP 409
+
+Summary:
+Total concurrent requests: 10
+Successful purchases (HTTP 201): 8
+Rejected purchases (HTTP 409): 2
+
+TEST 7: VERIFY INVENTORY AFTER CONCURRENT PURCHASES
+------------------------------------------------------------
+Request:
+GET http://localhost:5000/info/2
+
+Actual Response:
+{
+    "id": 2,
+    "price": 45.0,
+    "stock": 0,
+    "title": "RPCs for Noobs.",
+    "topic": "distributed systems"
+}
+
+Result:
+Initial stock: 8
+Successful purchases: 8
+Final stock: 0
+
+The test completed without overselling.
+The inventory did not become negative.
+
 ============================================================
 END OF PROGRAM EXECUTION OUTPUT
 ============================================================
