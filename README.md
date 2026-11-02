@@ -1,3 +1,4 @@
+
 # Bazar Distributed Online Bookstore
 
 **Distributed and Operating Systems — Lab 1**
@@ -73,7 +74,9 @@ bazar-distributed-bookstore/
 ├── docs/
 │   ├── CATALOG_API.md
 │   ├── ORDER_API.md
-│   └── FRONTEND_API.md
+│   ├── FRONTEND_API.md
+│   ├── DESIGN.md
+│   └── OUTPUT.txt
 ├── docker-compose.yml
 ├── .gitignore
 └── README.md
@@ -162,6 +165,7 @@ docker compose down
 | GET | `/info/<item_number>` | Retrieve book information |
 | PATCH | `/books/<item_number>/price` | Update book price |
 | PATCH | `/books/<item_number>/decrement` | Deduct available stock |
+| PATCH | `/books/<item_number>/increment` | Increase available stock |
 
 ### Order Service — Port 5002
 
@@ -295,16 +299,42 @@ Verified scenarios include:
 - Inter-service HTTP communication.
 - Docker service logs.
 - Updated catalog containing the four required book titles.
+- Concurrent purchase requests.
+- Prevention of overselling during concurrent purchases.
+- Verification that inventory does not become negative.
 
-These tests demonstrate the core functionality of the distributed bookstore.
+### Concurrency Test Results
 
-## 12. API Documentation
+A concurrency test was performed using book ID 2, "RPCs for Noobs."
 
-Detailed API documentation is available in the `docs` directory:
+Initial available stock: **8 copies**.
+
+Ten purchase requests were submitted concurrently using `xargs -P 10`, with a unique request ID for each request.
+
+| Result | Number of Requests |
+|---|---|
+| Total concurrent requests | 10 |
+| Successful purchases (HTTP 201) | 8 |
+| Rejected purchases (HTTP 409) | 2 |
+| Final available stock | 0 |
+
+The results demonstrate that the system prevented overselling in this test. The Catalog Service accepted only the available quantity and rejected additional purchase requests.
+
+Detailed execution output is available in `docs/OUTPUT.txt`.
+
+## 12. Project Documentation
+
+Detailed documentation is available in the `docs` directory:
 
 - [Catalog Service API](docs/CATALOG_API.md)
 - [Order Service API](docs/ORDER_API.md)
 - [Frontend Service API](docs/FRONTEND_API.md)
+- [System Design Document](docs/DESIGN.md)
+- [Program Execution Output](docs/OUTPUT.txt)
+
+The system design document describes the architecture, service responsibilities, communication, reliability mechanisms, limitations, and potential improvements.
+
+The program execution output includes actual results from search, book information, purchase, duplicate request handling, and concurrent purchase testing.
 
 ## 13. Repository
 
