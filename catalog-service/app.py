@@ -1,3 +1,4 @@
+
 import json
 import sqlite3
 from pathlib import Path
@@ -78,7 +79,9 @@ def update_book_price(item_number):
         or not isinstance(price, (int, float))
         or not (0 <= price < float("inf"))
     ):
-        return jsonify({"error": "Price must be a non-negative finite number"}), 400
+        return jsonify({
+            "error": "Price must be a non-negative finite number"
+        }), 400
 
     db_file = Path(__file__).resolve().parent / "books.db"
 
@@ -149,6 +152,52 @@ def decrement_book_stock(item_number):
         "quantity": quantity,
         "stock": new_stock
     })
+
+
+@app.route("/books/<int:item_number>/increment", methods=["PATCH"])
+def increment_book_stock(item_number):
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": "JSON body is required"
+        }), 400
+
+    quantity = data.get("quantity")
+
+    if type(quantity) is not int or quantity <= 0:
+        return jsonify({
+            "error": "Quantity must be a positive integer"
+        }), 400
+
+    db_file = Path(__file__).resolve().parent / "books.db"
+
+    with sqlite3.connect(db_file, timeout=10) as connection:
+        cursor = connection.execute(
+            """
+            UPDATE books
+            SET stock = stock + ?
+            WHERE id = ?
+            """,
+            (quantity, item_number)
+        )
+
+        if cursor.rowcount == 0:
+            return jsonify({
+                "error": "Book not found"
+            }), 404
+
+        new_stock = connection.execute(
+            "SELECT stock FROM books WHERE id = ?",
+            (item_number,)
+        ).fetchone()[0]
+
+    return jsonify({
+        "message": "Stock incremented successfully",
+        "id": item_number,
+        "quantity": quantity,
+        "stock": new_stock
+    }), 200
 
 
 if __name__ == "__main__":
