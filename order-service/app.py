@@ -251,6 +251,9 @@ def purchase_book():
             "request_id": request_id
         }), 503
 
+    # Print the successful purchase message required by the lab
+    print(f"bought book {book['title']}", flush=True)
+
     return jsonify({
         "message": "Purchase completed successfully",
         "order": get_order(request_id)
