@@ -95,6 +95,39 @@ An insufficient-stock response includes available_stock.
 The stock decrement uses an atomic conditional SQLite UPDATE
 to prevent stock from becoming negative under concurrent requests.
 
+## 6. Increment Book Stock
+
+PATCH /books/1/increment
+
+Content-Type: application/json
+
+Request:
+{"quantity":1}
+
+Success: HTTP 200
+
+Response example:
+{"message":"Stock incremented successfully","id":1,"quantity":1,"stock":6}
+
+Errors:
+- 400: JSON body is required
+- 400: Quantity must be a positive integer
+- 404: Book not found
+
+The increment operation increases the available stock
+of an existing book.
+
+The quantity must be a positive integer.
+
+The operation uses a SQLite UPDATE statement to increase
+stock atomically.
+
+This endpoint supports inventory replenishment and
+manual stock adjustments.
+
+It is not automatically invoked to compensate for
+failed or uncertain orders.
+
 ## Order Service Integration Notes
 
 The Order Service should:
@@ -104,14 +137,19 @@ The Order Service should:
 3. Request stock decrement using PATCH /books/<id>/decrement.
 4. Handle HTTP 200, 400, 404, and 409 appropriately.
 5. Record successful orders in its own persistent storage.
+6. Print "bought book book_name" after successful order completion.
 
 Important:
 - Checking stock with GET /info does not reserve stock.
 - The decrement response determines whether stock was actually obtained.
 - The Catalog API currently has no idempotency key.
 - Repeating a successful decrement request can deduct stock again.
-- The Order Service must plan for duplicate requests and failures.
-- There is currently no stock restoration endpoint.
+- The Order Service uses request_id to prevent duplicate
+  purchase processing at the order level.
+- The Catalog Service supports stock increases through
+  PATCH /books/<id>/increment.
+- Stock restoration is not automatically coordinated
+  with failed or uncertain orders.
 - Order recording and Catalog stock updates are not one
   cross-service database transaction.
 
