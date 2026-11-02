@@ -224,3 +224,4 @@ __marimo__/
 *.db-journal
 *.db-wal
 *.db-shm
+catalog-service/books.db.backup
