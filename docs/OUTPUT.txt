@@ -1,0 +1,118 @@
+
+============================================================
+BAZAR.COM - DISTRIBUTED ONLINE BOOKSTORE
+PROGRAM EXECUTION OUTPUT
+Distributed and Operating Systems - Fall 2026
+============================================================
+
+TEST 1: SEARCH BOOKS BY TOPIC
+------------------------------------------------------------
+Request:
+GET http://localhost:5000/search/distributed%20systems
+
+Response:
+{
+    "books": [
+        {
+            "id": 1,
+            "price": 50.0,
+            "stock": 5,
+            "title": "How to get a good grade in DOS in 40 minutes a day.",
+            "topic": "distributed systems"
+        },
+        {
+            "id": 2,
+            "price": 45.0,
+            "stock": 8,
+            "title": "RPCs for Noobs.",
+            "topic": "distributed systems"
+        }
+    ],
+    "count": 2,
+    "topic": "distributed systems"
+}
+
+TEST 2: GET BOOK INFORMATION
+------------------------------------------------------------
+Request:
+GET http://localhost:5000/info/1
+
+Response:
+{
+    "id": 1,
+    "price": 50.0,
+    "stock": 5,
+    "title": "How to get a good grade in DOS in 40 minutes a day.",
+    "topic": "distributed systems"
+}
+
+TEST 3: SUCCESSFUL BOOK PURCHASE
+------------------------------------------------------------
+Request:
+POST http://localhost:5000/purchase
+
+Request Body:
+{
+    "item_number": 1,
+    "quantity": 1,
+    "request_id": "purchase-log-test-001"
+}
+
+HTTP Status: 201 CREATED
+
+Response:
+{
+    "message": "Purchase completed successfully",
+    "order": {
+        "created_at": "2026-11-02 12:03:12",
+        "id": 17,
+        "item_number": 1,
+        "quantity": 1,
+        "request_id": "purchase-log-test-001",
+        "status": "completed",
+        "total_price": 50.0,
+        "unit_price": 50.0
+    }
+}
+
+TEST 4: SUCCESSFUL PURCHASE MESSAGE
+------------------------------------------------------------
+Command:
+docker compose logs order | grep "bought book"
+
+Output:
+order-1  | bought book How to get a good grade in DOS in 40 minutes a day.
+
+TEST 5: DUPLICATE PURCHASE REQUEST
+------------------------------------------------------------
+Request:
+POST http://localhost:5000/purchase
+
+Request Body:
+{
+    "item_number": 1,
+    "quantity": 1,
+    "request_id": "purchase-log-test-001"
+}
+
+Response:
+{
+    "message": "Order already completed",
+    "order": {
+        "created_at": "2026-11-02 12:03:12",
+        "id": 17,
+        "item_number": 1,
+        "quantity": 1,
+        "request_id": "purchase-log-test-001",
+        "status": "completed",
+        "total_price": 50.0,
+        "unit_price": 50.0
+    }
+}
+
+The duplicate request returned the existing completed order
+without performing another stock decrement.
+
+============================================================
+END OF PROGRAM EXECUTION OUTPUT
+============================================================
